@@ -4,25 +4,28 @@ from PIL import Image
 class TarotImage:
     def __init__(self, reading):
         self.reading = reading
-        self.reading_type = len(self.reading)
-        dimensions = self.width()
-        width = int(dimensions["img_width"] / len(self.reading) - 15)
-        size = (width, 300)
-        box = (10, 25)
-        image = Image.new("RGB", (dimensions["img_width"], dimensions["img_height"]), (255, 255, 255))
-        for card in self.reading:
-            card_im = Image.open(card['url'])
-            card_im.thumbnail(size)
-            if card['is_reversed']:
-                card_im = card_im.transpose(Image.Transpose.ROTATE_180)
-            image.paste(card_im, box)
-            box = (box[0] + width + 15, 25)
-        image.save("tarot.jpg")
+        self.card_size = (100, 175)
+        self.img_size = (500, 300)
 
-    def width(self):
-        if self.reading_type == 3:
-            return {"img_width": 500, "img_height": 300}
-        elif self.reading_type == 4:
-            return {"img_width": 400, "img_height": 200}
-        else:
-            pass
+    def create_image(self):
+        # Tarot image settings depend on the reading type
+        image_path = "tarot.jpg"
+        padding = 20 if len(self.reading) == 4 else 50
+        box_x = padding
+        box_y = 63
+
+        # Create the blank background
+        image = Image.new("RGB", self.img_size, "#fff")
+        for card in self.reading:
+            card_image = self.create_card(card)
+            image.paste(card_image, (box_x, box_y))
+            box_x += self.card_size[0] + padding
+        image.save(image_path)
+
+    def create_card(self, card):
+        card_image = Image.open(card['url'])
+        card_image.thumbnail(self.card_size)
+        # Check is card is reversed
+        if card.get('is_reversed'):
+            card_image = card_image.transpose(Image.Transpose.ROTATE_180)
+        return card_image

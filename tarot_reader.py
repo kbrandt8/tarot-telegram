@@ -4,6 +4,8 @@ import random
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+from tarot_img import TarotImage
+
 # ENVIRONMENT VARIABLES
 load_dotenv()
 MONGO_URL = os.getenv('MONGO_URL')
@@ -21,6 +23,7 @@ class Reading():
         reader = self.get_database()
         reading = reader.cards.aggregate([{"$sample": {"size": num_of_cards}}])
         full_reading = [{'name': card['name'], 'url': card['url'], 'is_reversed': self.reversed()} for card in reading]
+        TarotImage(full_reading)
         return full_reading
 
     def reversed(self):

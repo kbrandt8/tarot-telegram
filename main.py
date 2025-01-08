@@ -5,19 +5,38 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder
 from telegram.ext import CommandHandler, ContextTypes
 
-from tarot_img import TarotImage
 from tarot_reader import Reading
 
-# ENVIRONMENT VARIABLES
+# Environment Variables
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
 CONNECTION_STRING = os.getenv('MONGO_URL')
 
 
-# COMMANDS
+# Utility Functions
+def format_reading(cards):
+    reply_text = ""
+    for card in cards:
+        reversed = "Reversed" if card["is_reversed"] else "Upright"
+        reply_text += f"{card['title']}: {card['name']}({reversed})\n"
+    return reply_text
+
+
+async def send_reading(update: Update, context: ContextTypes.DEFAULT_TYPE, cards):
+    caption = format_reading(cards)
+    print(caption)
+    try:
+        with open("tarot.jpg", "rb") as photo:
+            await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo, caption=caption)
+    except FileNotFoundError:
+        await update.message.reply_text("Error: Image Not Found")
+
+
+# Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    reply_text = (f"Let's start your reading, {update.effective_user.first_name}\n"
+    reply_text = (f"Let's start your reading, "
+                  f"{update.effective_user.first_name}\n"
                   f"Pick a reading:\n"
                   f"/three_Card:\n"
                   f"The classic 'past present future' reading\n"
@@ -27,28 +46,18 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_text(reply_text)
 
 
-async def three_card_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    reply_text = f""
+async def tarot_reading(update: Update, context: ContextTypes.DEFAULT_TYPE, num_cards: int):
     reading = Reading()
-    three_card = reading.three_card()
+    cards = reading.three_card() if num_cards == 3 else reading.four_card()
+    await send_reading(update, context, cards)
 
-    for card in three_card:
-        reversed = "Reversed" if card['is_reversed'] else "Upright"
-        reply_text += f"{card['title']}: {card['name']} ({reversed}) \n"
-    print(reply_text)
-    images = TarotImage(three_card)
-    await context.bot.send_photo(update.effective_chat.id, open("tarot.jpg", 'rb'), caption=reply_text)
+
+async def three_card_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await tarot_reading(update, context, num_cards=3)
 
 
 async def four_card_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    reply_text = f""
-    reading = Reading()
-    four_card = reading.four_card()
-    for card in four_card:
-        reversed = "Reversed" if card['is_reversed'] else "Upright"
-        reply_text += f"{card['title']}: {card['name']} ({reversed}) \n"
-    images = TarotImage(four_card)
-    await context.bot.send_photo(update.effective_chat.id, open("tarot.jpg", 'rb'), caption=reply_text)
+    await tarot_reading(update, context, num_cards=4)
 
 
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,7 +75,7 @@ def main() -> None:
     # Errors
     app.add_error_handler(error)
     print('Polling...')
-    app.run_polling(poll_interval=5)
+    app.run_polling()
 
 
 if __name__ == "__main__":
