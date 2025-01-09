@@ -47,9 +47,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def tarot_reading(update: Update, context: ContextTypes.DEFAULT_TYPE, num_cards: int):
-    reading = Reading()
-    cards = reading.three_card() if num_cards == 3 else reading.four_card()
-    await send_reading(update, context, cards)
+    reading = Reading(num_cards)
+    await send_reading(update, context, reading.cards)
 
 
 async def three_card_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
