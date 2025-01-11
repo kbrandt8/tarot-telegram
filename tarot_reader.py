@@ -44,7 +44,7 @@ class Reading:
              'url': card['url'],
              'is_reversed': self.reversed(),
              'title': titles[index]}
-            for(index, card) in
+            for (index, card) in
             enumerate(reading)]
 
         return full_reading

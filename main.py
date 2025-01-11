@@ -11,7 +11,7 @@ from tarot_reader import Reading
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
-CONNECTION_STRING = os.getenv('MONGO_URL')
+
 
 
 # Utility Functions
@@ -78,4 +78,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    print('Starting...')
     main()
