@@ -1,5 +1,6 @@
 import os
 
+import telegram
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder
@@ -11,7 +12,6 @@ from tarot_reader import Reading
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
-
 
 
 # Utility Functions
